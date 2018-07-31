@@ -50,3 +50,24 @@ rc <- res %>%
   summarise(n = n())
 
 rc <- as.data.table(rc)
+
+
+# congress vote share by state
+
+total_votes <- as.data.table(
+    ed %>%
+      group_by(state) %>%
+      summarise(total = sum(total))
+)
+
+total_votes$party <- 'ALL'
+
+congress_total_votes <- as.data.table(
+  ed %>%
+    group_by(state, party) %>%
+    filter(party == 'INC') %>%
+    summarise(total = sum(total))
+)
+
+inc_vs_total <- merge(total_votes, congress_total_votes, by='state', suffixes=c('_all', '_inc'))
+inc_vs_total$inc_pct <- inc_vs_total$total_inc/inc_vs_total$total_all * 100
